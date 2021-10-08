@@ -87,6 +87,10 @@ if os.path.isfile('models/medical_trial_model.h5') is False:
 
 from tensorflow.keras.models import load_model
 new_model=load_model('models/medical_trial_model.h5')
-#chek if it is the same
-new_model.summary()
-new_model.get_weights()
+# chek if it is the same
+# new_model.summary()
+# new_model.get_weights()
+# new_model.optimizer
+# model.to_json
+# model.to_yaml
+

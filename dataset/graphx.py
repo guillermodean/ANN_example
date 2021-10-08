@@ -36,3 +36,11 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+def plotImages (images_arr):
+    fig,axes = plt.subplots(1,10,figsize=(20,20))
+    axes = axes.flatten()
+    for img, ax in zip (images_arr,axes):
+        ax.imshow(img)
+        ax.axis('off')
+    plt.tight_layout()
