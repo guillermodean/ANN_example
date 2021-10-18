@@ -15,8 +15,13 @@ import glob
 import matplotlib.pyplot as plt
 import warnings
 from dataset.graphx import plotImages
+from dataset.graphx import plot_confusion_matrix
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+
+physical_devices = tf.config.list_physical_devices('GPU')
+print("Num GPUs available:", len(physical_devices))
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # organize data into train, valid and test.
 os.chdir('dogs-vs-cats')
@@ -75,14 +80,35 @@ plotImages(imgs)
 print(labels)
 plt.show()
 
-
 # Build and train CNN image data kernelsize 3 by 3, maxpool cut image dimension in half.
 
 model = Sequential([
-    Conv2D(filters=32,kernel_size=(3,3),activation='relu',padding='same', input_shape=(244,244,3)),
-    MaxPool2D(pool_size=(2,2),strides=2),
-    Conv2D(filters=64,kernel_size=(3,3),activation='relu',padding='same'),
-    MaxPool2D(pool_size=(2,2),strides=2),
+    Conv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same', input_shape=(244, 244, 3)),
+    MaxPool2D(pool_size=(2, 2), strides=2),
+    Conv2D(filters=64, kernel_size=(3, 3), activation='relu', padding='same'),
+    MaxPool2D(pool_size=(2, 2), strides=2),
     Flatten(),
-    Dense(units=2,activation='softmax')
+    Dense(units=2, activation='softmax')
 ])
+
+model.summary()
+model.compile(optimizer=Adam(learning_rate=0.0001),loss='categorical_crossentropy',metrics=['accuracy']) #binary cross entropy also possible => sigmoid activation.
+model.fit(x=train_batches,validation_data=valid_batches,epochs=10,verbose=2) #data is stored as a generator so we dont have to specify y
+
+#CNN predictions
+
+test_imgs,test_labels=next(test_batches)
+plotImages(test_imgs)
+plt.show()
+print(test_labels)
+
+test_batches.classes
+
+predictions= model.predict(x=test_batches,verbose=0)
+print(np.round(predictions)) #each one of the arrays is one prediction=> prediction for the first sample =>
+
+cm=confusion_matrix(y_true=test_batches.classes,y_pred=np.argmax(predictions,axis=1))
+print(test_batches.classes)
+cm_plot_labels=['cat','dog']
+plot_confusion_matrix(cm=cm,classes=cm_plot_labels,title='Confusion matrix cnn',cmap=plt.cm.Blues)
+plt.show() #overfitting
