@@ -104,11 +104,44 @@ print(test_labels)
 
 test_batches.classes
 
-predictions= model.predict(x=test_batches,verbose=0)
-print(np.round(predictions)) #each one of the arrays is one prediction=> prediction for the first sample =>
+predictions1= model.predict(x=test_batches,verbose=0)
+print(np.round(predictions1)) #each one of the arrays is one prediction=> prediction for the first sample =>
 
-cm=confusion_matrix(y_true=test_batches.classes,y_pred=np.argmax(predictions,axis=1))
+cm=confusion_matrix(y_true=test_batches.classes,y_pred=np.argmax(predictions1,axis=1))
 print(test_batches.classes)
 cm_plot_labels=['cat','dog']
 plot_confusion_matrix(cm=cm,classes=cm_plot_labels,title='Confusion matrix cnn',cmap=plt.cm.Blues)
+plt.show() #overfitting
+
+#Build a fine tunned VGG16 model
+
+vgg16model = tf.keras.applications.vgg16.VGG16()
+vgg16model.summary()
+
+model = Sequential()
+for layer in vgg16model.layers[:-1]:  #we look in every layer o
+    model.add(layer)
+
+for layer in model.layers:
+    layer.trainable=False  #iterar por las layers del nuevo model y vamos a setearlas como no entrenables => freeze the weights and biases from al the liars, not retrained => vgg16 already trained.
+
+model.add(Dense(units=2,activation='softmax'))
+
+model.summary()  #added last dense layer with two output classes => dog,cat, trainable parameters => dense layer, the rest not trainable
+
+
+model.compile (optimizer=Adam(learning_rate=0.0001),loss='categorical_crossentropy',metrics=['accuracy'])
+
+model.fit(x=train_batches,validation_data=valid_batches,epochs=5,verbose=2)
+
+#Predictions usin fine tuned
+
+predictions2 = model.predict(x=test_batches,verbose=0)
+
+print(np.round(predictions2)) #each one of the arrays is one prediction=> prediction for the first sample =>
+
+cm=confusion_matrix(y_true=test_batches.classes,y_pred=np.argmax(predictions2,axis=1))
+print(test_batches.classes)
+cm_plot_labels=['cat','dog']
+plot_confusion_matrix(cm=cm,classes=cm_plot_labels,title='Confusion matrix VGG16',cmap=plt.cm.Blues)
 plt.show() #overfitting
